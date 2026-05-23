@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>نظام برايل الهجين المطور - النسخة المؤمنة</title>
+    <script src="https://unpkg.com/docx@7.1.0/build/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        :root { --bg: #050505; --cyan: #00f3ff; --purple: #bc13fe; --key-bg: rgba(25, 25, 25, 0.9); --red: #ff3b3b; --glass: rgba(255, 255, 255, 0.05); }
+        body { background-color: var(--bg); color: #fff; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; overflow: hidden; touch-action: none; user-select: none; background-image: radial-gradient(circle at 50% 50%, #111 0%, #000 100%); }
+        #display-section { height: 22vh; background: var(--glass); backdrop-filter: blur(15px); border-bottom: 2px solid var(--cyan); padding: 10px; display: flex; flex-direction: column; }
+        #output { flex: 1; background: transparent; border: none; color: var(--cyan); font-size: 22px; resize: none; outline: none; text-align: right; text-shadow: 0 0 8px var(--cyan); font-weight: bold; }
+        #braille-preview { height: 30px; color: var(--purple); font-size: 18px; border-top: 1px solid #333; padding-top: 5px; overflow-x: auto; white-space: nowrap; }
+        #keyboard-container { height: 60vh; overflow-y: auto; background: transparent; }
+        #keyboard-sighted { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; padding: 10px; }
+        #keyboard-blind { display: none; grid-template-columns: 1fr 1fr; gap: 30px; padding: 20px; }
+        .cluster-main { background: radial-gradient(circle, #222 0%, #000 100%); border: 2px solid var(--purple); border-radius: 50%; position: relative; aspect-ratio: 1/1; }
+        .sub-key { position: absolute; width: 60px; height: 60px; background: #111; border: 2px solid var(--cyan); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #fff; box-shadow: 0 0 10px var(--cyan); touch-action: manipulation; }
+        .sub-key:active { background: var(--cyan); color: #000; }
+        .pos-0 { right: -5%; top: 35%; } .pos-1 { right: 15%; top: -5%; } .pos-2 { left: 15%; top: -5%; } .pos-3 { left: -5%; top: 35%; } .pos-4 { left: 15%; bottom: -5%; } .pos-5 { right: 15%; bottom: -5%; }
+        .key-s { background: var(--key-bg); border: 1px solid rgba(0, 243, 255, 0.3); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 55px; cursor: pointer; }
+        .key-s b { font-size: 18px; color: var(--purple); }
+        #nav-bar { height: 18vh; display: grid; grid-template-columns: repeat(5, 20%); background: #000; border-top: 2px solid var(--purple); }
+        .nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: #fff; cursor: pointer; border: 0.1px solid #222; text-align: center; }
+        .nav-btn b { color: var(--cyan); font-size: 14px; }
+        .popup-menu { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); width: 90%; background: rgba(0,0,0,0.95); border: 2px solid var(--cyan); border-radius: 15px; padding: 15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; z-index: 10001; transition: 0.2s; }
+        .popup-menu.active { transform: translate(-50%, -50%) scale(1); }
+        #mode-toggle { position: fixed; top: 10px; left: 10px; z-index: 10002; background: var(--purple); border: none; color: #fff; padding: 8px 15px; border-radius: 15px; font-weight: bold; box-shadow: 0 0 10px var(--purple); cursor: pointer; }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; display: none; }
+    </style>
+</head>
+<body onclick="_v._x()">
+
+<div id="overlay"></div>
+<button id="mode-toggle" onclick="event.stopPropagation(); _v._t()">🔄 وضع التشغيل</button>
+
+<div id="display-section" onclick="event.stopPropagation()">
+    <textarea id="output" readonly placeholder="سوف يظهر النص هنا..."></textarea>
+    <div id="braille-preview" dir="ltr"></div>
+</div>
+
+<div id="keyboard-container">
+    <div id="keyboard-sighted" onclick="event.stopPropagation()"></div>
+    <div id="keyboard-blind" onclick="event.stopPropagation()"></div>
+</div>
+
+<div id="nav-bar" onclick="event.stopPropagation()">
+    <div class="nav-btn" onclick="_v._uc(this, () => _v._p('pop-nums', 'الأرقام'), 'أرقام')">🔢<br>أرقام<br><b>⠼</b></div>
+    <div class="nav-btn" onclick="_v._uc(this, () => _v._p('pop-tashkeel', 'التشكيل'), 'تشكيل')">✨<br>تشكيل<br><b>⠠</b></div>
+    <div class="nav-btn" onclick="_v._uc(this, () => _v._p('pop-punct', 'علامات الترقيم'), 'ترقيم')">❓<br>ترقيم<br><b>⠦</b></div>
+    <div class="nav-btn" onclick="_v._uc(this, () => _v._p('pop-hamzas', 'الهمزات'), 'همزات')">ء<br>همزات<br><b>⠄</b></div>
+    <div class="nav-btn" onclick="_v._uc(this, _v._b, 'حذف')" style="color:var(--red)">🔙<br>حذف<br><b>⠡</b></div>
+    <div class="nav-btn" onclick="_v._uc(this, _v._sa, 'نطق النص')">🔊<br>نطق النص</div>
+    <div class="nav-btn" onclick="_v._uc(this, _v._cy, 'نسخ')">📋<br>نسخ</div>
+    <div class="nav-btn" onclick="_v._uc(this, _v._cl, 'مسح الكل')">🗑️<br>مسح الكل</div>
+    <div class="nav-btn" onclick="_v._uc(this, _v._ex, 'حفظ كملف وورد')">💾<br>Word</div>
+    <div class="nav-btn" onclick="_v._uc(this, _v._s, 'مسافة')" style="background:var(--cyan); color:#000;">␣<br>مسافة</div>
+</div>
+
+<div id="pop-nums" class="popup-menu" onclick="event.stopPropagation()"></div>
+<div id="pop-tashkeel" class="popup-menu" onclick="event.stopPropagation()"></div>
+<div id="pop-punct" class="popup-menu" onclick="event.stopPropagation()"></div>
+<div id="pop-hamzas" class="popup-menu" onclick="event.stopPropagation()"></div>
+
+<script>
+/**
+ * 🔒 ARMORED HYBRID BRAILLE SYSTEM 2.0
+ * Protected Logic + Full Functional Capabilities
+ */
+const _v = (function() {
+    const _0xData = {
+        _c: {'ا': '⠁', 'ب': '⠃', 'ت': '⠞', 'ث': '⠹', 'ج': '⠚', 'ح': '⠱', 'خ': '⠭', 'د': '⠙', 'ذ': '⠮', 'ر': '⠗', 'ز': '⠵', 'س': '⠎', 'ش': '⠩', 'ص': '⠯', 'ض': '⠻', 'ط': '⠾', 'ظ': '⠿', 'ع': '⠷', 'غ': '⠣', 'ف': '⠋', 'ق': '⠟', 'ك': '⠅', 'ل': '⠇', 'م': '⠍', 'ن': '⠝', 'هـ': '⠓', 'و': '⠺', 'ي': '⠊', 'ة': '⠡', 'ى': '⠕', 'پ': '⠏', 'چ': '⠡', 'ڤ': '⠧', 'گ': '⠛'},
+        _h: { 'أ': '⠁⠃', 'إ': '⠌', 'ؤ': '⠳', 'ئ': '⠽', 'ء': '⠄', 'آ': '⠜' },
+        _t: { 'َ': '⠂', 'ُ': '⠕', 'ِ': '⠐', 'ْ': '⠒', 'ً': '⠘', 'ٌ': '⠰', 'ٍ': '⠡', 'ّ': '⠠⠠' },
+        _p: { '.': '⠲', '،': '⠂', '؟': '⠦', '!': '⠖', '(': '⠶', ')': '⠶', '+': '⠖', '-': '⠒', '×': '⠦', '÷': '⠲' },
+        _n: { '1': '⠼⠁', '2': '⠼⠃', '3': '⠼⠉', '4': '⠼⠙', '5': '⠼⠑', '6': '⠼⠋', '7': '⠼⠛', '8': '⠼⠓', '9': '⠼⠊', '0': '⠼⠚' },
+        _names: { 'َ': 'فتحة', 'ُ': 'ضمة', 'ِ': 'كسرة', 'ْ': 'سكون', 'ً': 'تنوين فتح', 'ٌ': 'تنوين ضم', 'ٍ': 'تنوين كسر', 'ّ': 'شدة' }
+    };
+
+    let _isBlind = false, _buffer = [], _lt = 0, _ltg = null;
+
+    const _speak = (t) => {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(t);
+        u.lang = 'ar-SA';
+        window.speechSynthesis.speak(u);
+    };
+
+    const _up = () => {
+        document.getElementById('braille-preview').innerText = _buffer.join('');
+        const o = document.getElementById('output');
+        o.scrollTop = o.scrollHeight;
+    };
+
+    return {
+        _uc: function(el, action, desc) {
+            _speak(desc || el.innerText);
+            if (!_isBlind) { action(); } 
+            else {
+                const now = new Date().getTime();
+                const diff = now - _lt;
+                if (_ltg === el && diff < 500 && diff > 0) { action(); _ltg = null; } 
+                else { _ltg = el; }
+                _lt = now;
+            }
+        },
+        _i: function(c, type = 'l') {
+            const o = document.getElementById('output');
+            o.value += c;
+            const b = _0xData._c[c] || _0xData._h[c] || _0xData._t[c] || _0xData._p[c] || _0xData._n[c] || "";
+            _buffer.push(b);
+            _speak(type === 't' ? _0xData._names[c] : c);
+            _up();
+        },
+        _s: function() { _speak("مسافة"); document.getElementById('output').value += " "; _buffer.push(" "); _up(); },
+        _b: function() {
+            const o = document.getElementById('output');
+            if (o.value.length > 0) {
+                const lc = o.value.slice(-1);
+                if (!_isBlind) _speak("حذف " + lc);
+                o.value = o.value.slice(0, -1);
+                _buffer.pop();
+                _up();
+            }
+        },
+        _cl: function() { _speak("تم مسح الكل"); document.getElementById('output').value = ""; _buffer = []; _up(); },
+        _t: function() { 
+            _isBlind = !_isBlind; 
+            document.getElementById('keyboard-sighted').style.display = _isBlind ? 'none' : 'grid';
+            document.getElementById('keyboard-blind').style.display = _isBlind ? 'grid' : 'none';
+            _speak(_isBlind ? "تم تفعيل وضع الكفيف. استكشف باللمس واضغط مرتين للتنفيذ" : "تم تفعيل وضع المبصر. التنفيذ بلمسة واحدة");
+            this._r();
+        },
+        _p: function(id, n) { _speak(n); document.getElementById('overlay').style.display = 'block'; document.getElementById(id).classList.add('active'); },
+        _x: function() { document.querySelectorAll('.popup-menu').forEach(p => p.classList.remove('active')); document.getElementById('overlay').style.display = 'none'; },
+        _cy: async function() {
+            const t = document.getElementById('output').value, br = _buffer.join('');
+            const f = _isBlind ? `النص العربي: ${t}\nنص برايل: ${br}` : br;
+            try { await navigator.clipboard.writeText(f); } catch (e) {
+                const ta = document.createElement("textarea"); ta.value = f; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+            }
+            _speak("تم النسخ");
+        },
+        _ex: function() {
+            _speak("تصدير ملف وورد");
+            const t = document.getElementById('output').value; if(!t) return;
+            const { Document, Packer, Paragraph, TextRun } = docx;
+            const doc = new Document({ sections: [{ children: [
+                new Paragraph({ children: [new TextRun({ text: "نظام برايل الهجين المطور", bold: true, size: 32 })], alignment: "center" }),
+                new Paragraph({ text: "" }),
+                new Paragraph({ children: [new TextRun({ text: "النص العربي: ", bold: true }), new TextRun(t)], rightToLeft: true }),
+                new Paragraph({ children: [new TextRun({ text: "نص برايل: ", bold: true }), new TextRun(_buffer.join(''))] })
+            ] }] });
+            Packer.toBlob(doc).then(b => saveAs(b, "Braille_Export.docx"));
+        },
+        _sa: function() { _speak(document.getElementById('output').value || "لا يوجد نص مكتوب"); },
+        _r: function() {
+            const sig = document.getElementById('keyboard-sighted'); sig.innerHTML = "";
+            Object.keys(_0xData._c).forEach(k => {
+                const d = document.createElement('div'); d.className = "key-s";
+                d.innerHTML = `<span>${k}</span><b>${_0xData._c[k]}</b>`;
+                d.onclick = (e) => { e.stopPropagation(); this._i(k); };
+                sig.appendChild(d);
+            });
+            const bld = document.getElementById('keyboard-blind'); bld.innerHTML = "";
+            const keys = Object.keys(_0xData._c);
+            for (let i = 0; i < keys.length; i += 6) {
+                const cl = document.createElement('div'); cl.className = "cluster-main";
+                const chunk = keys.slice(i, i + 6);
+                const desc = `عنقود من حرف ${chunk[0]} إلى ${chunk[chunk.length-1]}`;
+                cl.onclick = (e) => { e.stopPropagation(); _speak(desc); };
+                chunk.forEach((k, idx) => {
+                    const s = document.createElement('div'); s.className = `sub-key pos-${idx}`;
+                    s.innerText = k; s.onclick = (e) => { e.stopPropagation(); this._uc(s, () => this._i(k), `${desc}، حرف ${k}`); };
+                    cl.appendChild(s);
+                });
+                bld.appendChild(cl);
+            }
+            const f = (id, map, y) => {
+                const el = document.getElementById(id); el.innerHTML = "";
+                Object.keys(map).forEach(k => {
+                    const d = document.createElement('div'); d.className = "key-s";
+                    d.innerHTML = `<span>${k}</span><b>${map[k]}</b>`;
+                    d.onclick = (e) => { e.stopPropagation(); let dsc = y === 't' ? _0xData._names[k] : k; this._uc(d, () => this._i(k, y), dsc); };
+                    el.appendChild(d);
+                });
+            };
+            f('pop-nums', _0xData._n, 'n'); f('pop-tashkeel', _0xData._t, 't'); f('pop-punct', _0xData._p, 'p'); f('pop-hamzas', _0xData._h, 'h');
+        }
+    };
+})();
+_v._r();
+</script>
+</body>
+</html>
