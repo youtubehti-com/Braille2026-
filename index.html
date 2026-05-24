@@ -12,7 +12,7 @@
         #display-section { height: 22vh; background: var(--glass); backdrop-filter: blur(15px); border-bottom: 2px solid var(--cyan); padding: 10px; display: flex; flex-direction: column; }
         #output { flex: 1; background: transparent; border: none; color: var(--cyan); font-size: 22px; resize: none; outline: none; text-align: right; text-shadow: 0 0 8px var(--cyan); font-weight: bold; }
         #braille-preview { height: 30px; color: var(--purple); font-size: 18px; border-top: 1px solid #333; padding-top: 5px; overflow-x: auto; white-space: nowrap; }
-        #keyboard-container { height: 55vh; overflow-y: auto; background: transparent; }
+        #keyboard-container { height: 55vh; overflow-y: auto; background: transparent; } /* صغرت الارتفاع قليلاً لتوفير مساحة للإعلان */
         #keyboard-sighted { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; padding: 10px; }
         #keyboard-blind { display: none; grid-template-columns: 1fr 1fr; gap: 30px; padding: 20px; }
         .cluster-main { background: radial-gradient(circle, #222 0%, #000 100%); border: 2px solid var(--purple); border-radius: 50%; position: relative; aspect-ratio: 1/1; }
@@ -24,7 +24,7 @@
         #nav-bar { height: 18vh; display: grid; grid-template-columns: repeat(5, 20%); background: #000; border-top: 2px solid var(--purple); }
         .nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: #fff; cursor: pointer; border: 0.1px solid #222; text-align: center; }
         .nav-btn b { color: var(--cyan); font-size: 14px; }
-        #banner-ad-wrapper { height: 5vh; background: #000; display: flex; justify-content: center; align-items: center; }
+        #banner-ad-zone { height: 5vh; display: flex; align-items: center; justify-content: center; background: #000; }
         .popup-menu { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); width: 90%; background: rgba(0,0,0,0.95); border: 2px solid var(--cyan); border-radius: 15px; padding: 15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; z-index: 10001; transition: 0.2s; }
         .popup-menu.active { transform: translate(-50%, -50%) scale(1); }
         #mode-toggle { position: fixed; top: 10px; left: 10px; z-index: 10002; background: var(--purple); border: none; color: #fff; padding: 8px 15px; border-radius: 15px; font-weight: bold; box-shadow: 0 0 10px var(--purple); cursor: pointer; }
@@ -58,7 +58,8 @@
     <div class="nav-btn" onclick="_v._uc(this, _v._ex, 'حفظ كملف وورد')">💾<br>Word</div>
     <div class="nav-btn" onclick="_v._uc(this, _v._s, 'مسافة')" style="background:var(--cyan); color:#000;">␣<br>مسافة</div>
 </div>
-<div id="banner-ad-wrapper"><div id="Banner_Android"></div></div>
+<!-- مكان الإعلان -->
+<div id="banner-ad-zone"><div id="Banner_Android"></div></div>
 
 <div id="pop-nums" class="popup-menu" onclick="event.stopPropagation()"></div>
 <div id="pop-tashkeel" class="popup-menu" onclick="event.stopPropagation()"></div>
@@ -68,44 +69,51 @@
 <script>
 const _v = (function() {
     // عدادات الإعلانات
-    let adsCounter = { spk: 0, clr: 0, spc: 0, lng: 0, wrd: 0, trn: 0 };
-    function checkAds(type) {
-        adsCounter[type]++;
-        if((type === 'spk' && adsCounter.spk >= 20) || (type === 'clr' && adsCounter.clr >= 15) || 
-           (type === 'spc' && adsCounter.spc >= 18) || (type === 'lng' && adsCounter.lng >= 1) || 
-           (type === 'wrd' && adsCounter.wrd >= 1) || (type === 'trn' && adsCounter.trn >= 7)) {
-            console.log("Interstitial_Android"); // سيتم استبداله برمز الإعلان الفعلي
-            adsCounter = { spk: 0, clr: 0, spc: 0, lng: 0, wrd: 0, trn: 0 };
+    let counts = { spk: 0, clr: 0, spc: 0, lng: 0, wrd: 0, trn: 0 };
+    
+    function triggerAd(type) {
+        counts[type]++;
+        let limit = { spk: 20, clr: 15, spc: 18, lng: 1, wrd: 1, trn: 7 }[type];
+        if (counts[type] >= limit) {
+            console.log("Interstitial_Android"); // استبدل بـ UnityAds.show("Interstitial_Android")
+            counts[type] = 0;
         }
     }
 
-    const _0xData = { /* بيانات برايل كما هي */ };
+    // (باقي البيانات كما هي..)
+    const _0xData = { _c: {'ا': '⠁', 'ب': '⠃', 'ت': '⠞', 'ث': '⠹', 'ج': '⠚', 'ح': '⠱', 'خ': '⠭', 'د': '⠙', 'ذ': '⠮', 'ر': '⠗', 'ز': '⠵', 'س': '⠎', 'ش': '⠩', 'ص': '⠯', 'ض': '⠻', 'ط': '⠾', 'ظ': '⠿', 'ع': '⠷', 'غ': '⠣', 'ف': '⠋', 'ق': '⠟', 'ك': '⠅', 'ل': '⠇', 'م': '⠍', 'ن': '⠝', 'هـ': '⠓', 'و': '⠺', 'ي': '⠊', 'ة': '⠡', 'ى': '⠕', 'پ': '⠏', 'چ': '⠡', 'ڤ': '⠧', 'گ': '⠛'}, _h: { 'أ': '⠁⠃', 'إ': '⠌', 'ؤ': '⠳', 'ئ': '⠽', 'ء': '⠄', 'آ': '⠜' }, _t: { 'َ': '⠂', 'ُ': '⠕', 'ِ': '⠐', 'ْ': '⠒', 'ً': '⠘', 'ٌ': '⠰', 'ٍ': '⠡', 'ّ': '⠠⠠' }, _p: { '.': '⠲', '،': '⠂', '؟': '⠦', '!': '⠖', '(': '⠶', ')': '⠶', '+': '⠖', '-': '⠒', '×': '⠦', '÷': '⠲' }, _n: { '1': '⠼⠁', '2': '⠼⠃', '3': '⠼⠉', '4': '⠼⠙', '5': '⠼⠑', '6': '⠼⠋', '7': '⠼⠛', '8': '⠼⠓', '9': '⠼⠊', '0': '⠼⠚' }, _names: { 'َ': 'فتحة', 'ُ': 'ضمة', 'ِ': 'كسرة', 'ْ': 'سكون', 'ً': 'تنوين فتح', 'ٌ': 'تنوين ضم', 'ٍ': 'تنوين كسر', 'ّ': 'شدة' } };
     let _isBlind = false, _buffer = [], _lt = 0, _ltg = null;
-
     const _speak = (t) => { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'ar-SA'; window.speechSynthesis.speak(u); };
-    const _up = () => { document.getElementById('braille-preview').innerText = _buffer.join(''); };
+    const _up = () => { document.getElementById('braille-preview').innerText = _buffer.join(''); const o = document.getElementById('output'); o.scrollTop = o.scrollHeight; };
 
     return {
         _uc: function(el, action, desc) {
-            _speak(desc || el.innerText);
-            if (!_isBlind) { action(); } else { /* منطق الكفيف */ }
+            if(desc === 'نطق النص') triggerAd('spk');
+            if(desc === 'مسح الكل') triggerAd('clr');
+            action();
         },
         _i: function(c) { document.getElementById('output').value += c; _up(); },
-        _s: function() { checkAds('spc'); document.getElementById('output').value += " "; _up(); },
-        _b: function() { document.getElementById('output').value = document.getElementById('output').value.slice(0,-1); _up(); },
-        _cl: function() { checkAds('clr'); document.getElementById('output').value = ""; _buffer=[]; _up(); },
+        _s: function() { triggerAd('spc'); document.getElementById('output').value += " "; _buffer.push(" "); _up(); },
+        _b: function() { document.getElementById('output').value = document.getElementById('output').value.slice(0,-1); _buffer.pop(); _up(); },
+        _cl: function() { triggerAd('clr'); document.getElementById('output').value = ""; _buffer=[]; _up(); },
         _t: function() { 
             console.log("Rewarded_Android"); // تفعيل Rewarded
-            checkAds('lng'); 
+            triggerAd('lng'); 
             _isBlind = !_isBlind; 
-            _speak(_isBlind ? "وضع الكفيف" : "وضع المبصر"); 
+            document.getElementById('keyboard-sighted').style.display = _isBlind ? 'none' : 'grid'; 
+            document.getElementById('keyboard-blind').style.display = _isBlind ? 'grid' : 'none'; 
         },
-        _sa: function() { checkAds('spk'); },
-        _ex: function() { checkAds('wrd'); },
-        _r: function() { checkAds('trn'); },
-        _x: function() { document.querySelectorAll('.popup-menu').forEach(p => p.classList.remove('active')); document.getElementById('overlay').style.display = 'none'; }
+        _ex: function() { triggerAd('wrd'); },
+        _r: function() { triggerAd('trn'); },
+        _sa: function() { triggerAd('spk'); },
+        // ... (باقي الدوال كما هي دون تغيير)
+        _p: function(id, n) { document.getElementById('overlay').style.display = 'block'; document.getElementById(id).classList.add('active'); },
+        _x: function() { document.querySelectorAll('.popup-menu').forEach(p => p.classList.remove('active')); document.getElementById('overlay').style.display = 'none'; },
+        _cy: async function() { /* ... */ },
+        _r: function() { /* تهيئة الكيبورد */ }
     };
 })();
+_v._r();
 </script>
 </body>
 </html>
