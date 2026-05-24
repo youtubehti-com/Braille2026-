@@ -1,126 +1,187 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نظام برايل الهجين المطور - النسخة المؤمنة</title>
-    <script src="https://unpkg.com/docx@7.1.0/build/index.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <style>
-        :root { --bg: #050505; --cyan: #00f3ff; --purple: #bc13fe; --key-bg: rgba(25, 25, 25, 0.9); --red: #ff3b3b; --glass: rgba(255, 255, 255, 0.05); }
-        body { background-color: var(--bg); color: #fff; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; overflow: hidden; touch-action: none; user-select: none; background-image: radial-gradient(circle at 50% 50%, #111 0%, #000 100%); }
-        #display-section { height: 22vh; background: var(--glass); backdrop-filter: blur(15px); border-bottom: 2px solid var(--cyan); padding: 10px; display: flex; flex-direction: column; }
-        #output { flex: 1; background: transparent; border: none; color: var(--cyan); font-size: 22px; resize: none; outline: none; text-align: right; text-shadow: 0 0 8px var(--cyan); font-weight: bold; }
-        #braille-preview { height: 30px; color: var(--purple); font-size: 18px; border-top: 1px solid #333; padding-top: 5px; overflow-x: auto; white-space: nowrap; }
-        #keyboard-container { height: 50vh; overflow-y: auto; background: transparent; }
-        #keyboard-sighted { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; padding: 10px; }
-        #keyboard-blind { display: none; grid-template-columns: 1fr 1fr; gap: 30px; padding: 20px; }
-        .cluster-main { background: radial-gradient(circle, #222 0%, #000 100%); border: 2px solid var(--purple); border-radius: 50%; position: relative; aspect-ratio: 1/1; }
-        .sub-key { position: absolute; width: 60px; height: 60px; background: #111; border: 2px solid var(--cyan); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #fff; box-shadow: 0 0 10px var(--cyan); touch-action: manipulation; }
-        .sub-key:active { background: var(--cyan); color: #000; }
-        .pos-0 { right: -5%; top: 35%; } .pos-1 { right: 15%; top: -5%; } .pos-2 { left: 15%; top: -5%; } .pos-3 { left: -5%; top: 35%; } .pos-4 { left: 15%; bottom: -5%; } .pos-5 { right: 15%; bottom: -5%; }
-        .key-s { background: var(--key-bg); border: 1px solid rgba(0, 243, 255, 0.3); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 55px; cursor: pointer; }
-        .key-s b { font-size: 18px; color: var(--purple); }
-        #nav-bar { height: 18vh; display: grid; grid-template-columns: repeat(5, 20%); background: #000; border-top: 2px solid var(--purple); }
-        .nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: #fff; cursor: pointer; border: 0.1px solid #222; text-align: center; }
-        .nav-btn b { color: var(--cyan); font-size: 14px; }
-        #banner-ad-container { height: 10vh; background: #000; display: flex; align-items: center; justify-content: center; border-top: 1px solid #333; }
-        .popup-menu { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); width: 90%; background: rgba(0,0,0,0.95); border: 2px solid var(--cyan); border-radius: 15px; padding: 15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; z-index: 10001; transition: 0.2s; }
-        .popup-menu.active { transform: translate(-50%, -50%) scale(1); }
-        #mode-toggle { position: fixed; top: 10px; left: 10px; z-index: 10002; background: var(--purple); border: none; color: #fff; padding: 8px 15px; border-radius: 15px; font-weight: bold; box-shadow: 0 0 10px var(--purple); cursor: pointer; }
-        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; display: none; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام الأذكار اليومي</title>
+
+<style>
+body{
+    margin:0;
+    font-family:tahoma;
+    background:#0b0b0b;
+    color:white;
+}
+
+header{
+    background:#111;
+    padding:15px;
+    text-align:center;
+    font-size:20px;
+    color:#00f3ff;
+    font-weight:bold;
+}
+
+.container{
+    padding:15px;
+}
+
+.section-title{
+    margin:20px 0 10px;
+    color:#bc13fe;
+    font-size:18px;
+    font-weight:bold;
+}
+
+.card{
+    background:#161616;
+    margin-bottom:15px;
+    padding:15px;
+    border-radius:12px;
+    border:1px solid #222;
+}
+
+.title{
+    font-size:16px;
+    margin-bottom:10px;
+    color:#fff;
+}
+
+.counter{
+    font-size:14px;
+    margin-bottom:10px;
+    color:#ccc;
+}
+
+button{
+    padding:10px 15px;
+    border:none;
+    border-radius:10px;
+    background:#00f3ff;
+    color:#000;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:5px;
+}
+
+.progress{
+    width:100%;
+    height:12px;
+    background:#222;
+    border-radius:10px;
+    overflow:hidden;
+    margin-top:10px;
+}
+
+.bar{
+    height:100%;
+    width:0%;
+    background:#00f3ff;
+    transition:0.3s;
+}
+
+.points{
+    position:fixed;
+    top:10px;
+    left:10px;
+    background:#bc13fe;
+    padding:10px 15px;
+    border-radius:10px;
+    font-weight:bold;
+}
+</style>
 </head>
-<body onclick="_v._x()">
 
-<div id="overlay"></div>
-<button id="mode-toggle" onclick="event.stopPropagation(); _v._t()">🔄 وضع التشغيل</button>
+<body>
 
-<div id="display-section" onclick="event.stopPropagation()">
-    <textarea id="output" readonly placeholder="سوف يظهر النص هنا..."></textarea>
-    <div id="braille-preview" dir="ltr"></div>
+<div class="points">⭐ النقاط: <span id="points">0</span></div>
+
+<header>نظام الأذكار اليومي ✨</header>
+
+<div class="container">
+
+<div class="section-title">🌅 أذكار الصباح</div>
+
+<div id="morning"></div>
+
+<div class="section-title">🌙 أذكار المساء</div>
+
+<div id="evening"></div>
+
 </div>
-
-<div id="keyboard-container">
-    <div id="keyboard-sighted" onclick="event.stopPropagation()"></div>
-    <div id="keyboard-blind" onclick="event.stopPropagation()"></div>
-</div>
-
-<div id="nav-bar" onclick="event.stopPropagation()">
-    <div class="nav-btn" onclick="_v._uc(this, () => _v._p('pop-nums', 'الأرقام'), 'أرقام')">🔢<br>أرقام<br><b>⠼</b></div>
-    <div class="nav-btn" onclick="_v._uc(this, () => _v._p('pop-tashkeel', 'التشكيل'), 'تشكيل')">✨<br>تشكيل<br><b>⠠</b></div>
-    <div class="nav-btn" onclick="_v._uc(this, () => _v._p('pop-punct', 'علامات الترقيم'), 'ترقيم')">❓<br>ترقيم<br><b>⠦</b></div>
-    <div class="nav-btn" onclick="_v._uc(this, () => _v._p('pop-hamzas', 'الهمزات'), 'همزات')">ء<br>همزات<br><b>⠄</b></div>
-    <div class="nav-btn" onclick="_v._uc(this, _v._b, 'حذف')" style="color:var(--red)">🔙<br>حذف<br><b>⠡</b></div>
-    <div class="nav-btn" onclick="_v._uc(this, _v._sa, 'نطق النص')">🔊<br>نطق النص</div>
-    <div class="nav-btn" onclick="_v._uc(this, _v._cy, 'نسخ')">📋<br>نسخ</div>
-    <div class="nav-btn" onclick="_v._uc(this, _v._cl, 'مسح الكل')">🗑️<br>مسح الكل</div>
-    <div class="nav-btn" onclick="_v._uc(this, _v._ex, 'حفظ كملف وورد')">💾<br>Word</div>
-    <div class="nav-btn" onclick="_v._uc(this, _v._s, 'مسافة')" style="background:var(--cyan); color:#000;">␣<br>مسافة</div>
-</div>
-
-<div id="banner-ad-container"><div id="Banner_Android"></div></div>
-
-<div id="pop-nums" class="popup-menu" onclick="event.stopPropagation()"></div>
-<div id="pop-tashkeel" class="popup-menu" onclick="event.stopPropagation()"></div>
-<div id="pop-punct" class="popup-menu" onclick="event.stopPropagation()"></div>
-<div id="pop-hamzas" class="popup-menu" onclick="event.stopPropagation()"></div>
 
 <script>
-const _v = (function() {
-    // نظام العدادات للإعلانات
-    let adCounts = { spk: 0, clr: 0, spc: 0, lng: 0, wrd: 0, trn: 0 };
-    function checkAd(key) {
-        adCounts[key]++;
-        let limits = { spk: 20, clr: 15, spc: 18, lng: 1, wrd: 1, trn: 7 };
-        if (adCounts[key] >= limits[key]) {
-            console.log("Interstitial_Android"); // استدعاء Unity Ads
-            adCounts[key] = 0;
-        }
+
+let points = 0;
+
+const athkar = [
+    // 🌅 الصباح
+    {id:"m1", text:"أصبحنا وأصبح الملك لله", target:20, section:"morning"},
+    {id:"m2", text:"سبحان الله وبحمده", target:100, section:"morning"},
+    {id:"m3", text:"لا إله إلا الله وحده لا شريك له", target:10, section:"morning"},
+    {id:"m4", text:"أستغفر الله", target:100, section:"morning"},
+    {id:"m5", text:"اللهم بك أصبحنا وبك أمسينا", target:1, section:"morning"},
+
+    // 🌙 المساء
+    {id:"e1", text:"أمسينا وأمسى الملك لله", target:20, section:"evening"},
+    {id:"e2", text:"سبحان الله وبحمده", target:100, section:"evening"},
+    {id:"e3", text:"لا إله إلا الله وحده لا شريك له", target:10, section:"evening"},
+    {id:"e4", text:"أستغفر الله", target:100, section:"evening"},
+    {id:"e5", text:"اللهم بك أمسينا وبك أصبحنا", target:1, section:"evening"}
+];
+
+let data = {};
+
+athkar.forEach(a=>{
+    data[a.id]=0;
+});
+
+function render(){
+    athkar.forEach(a=>{
+        let section = document.getElementById(a.section);
+
+        let card = document.createElement("div");
+        card.className="card";
+
+        card.innerHTML=`
+        <div class="title">${a.text}</div>
+        <div class="counter" id="c_${a.id}">0 / ${a.target}</div>
+
+        <button onclick="add('${a.id}',${a.target})">+ ذكر</button>
+
+        <div class="progress">
+            <div class="bar" id="b_${a.id}"></div>
+        </div>
+        `;
+
+        section.appendChild(card);
+    });
+}
+
+function add(id,target){
+
+    data[id]++;
+
+    let percent = (data[id]/target)*100;
+
+    document.getElementById("c_"+id).innerText =
+        data[id] + " / " + target;
+
+    document.getElementById("b_"+id).style.width =
+        percent + "%";
+
+    points += 1;
+    document.getElementById("points").innerText = points;
+
+    if(data[id] === target){
+        alert("🎉 تم إكمال الذكر اليومي");
+        points += 20;
     }
+}
 
-    const _0xData = {
-        _c: {'ا': '⠁', 'ب': '⠃', 'ت': '⠞', 'ث': '⠹', 'ج': '⠚', 'ح': '⠱', 'خ': '⠭', 'د': '⠙', 'ذ': '⠮', 'ر': '⠗', 'ز': '⠵', 'س': '⠎', 'ش': '⠩', 'ص': '⠯', 'ض': '⠻', 'ط': '⠾', 'ظ': '⠿', 'ع': '⠷', 'غ': '⠣', 'ف': '⠋', 'ق': '⠟', 'ك': '⠅', 'ل': '⠇', 'م': '⠍', 'ن': '⠝', 'هـ': '⠓', 'و': '⠺', 'ي': '⠊', 'ة': '⠡', 'ى': '⠕', 'پ': '⠏', 'چ': '⠡', 'ڤ': '⠧', 'گ': '⠛'},
-        _h: { 'أ': '⠁⠃', 'إ': '⠌', 'ؤ': '⠳', 'ئ': '⠽', 'ء': '⠄', 'آ': '⠜' },
-        _t: { 'َ': '⠂', 'ُ': '⠕', 'ِ': '⠐', 'ْ': '⠒', 'ً': '⠘', 'ٌ': '⠰', 'ٍ': '⠡', 'ّ': '⠠⠠' },
-        _p: { '.': '⠲', '،': '⠂', '؟': '⠦', '!': '⠖', '(': '⠶', ')': '⠶', '+': '⠖', '-': '⠒', '×': '⠦', '÷': '⠲' },
-        _n: { '1': '⠼⠁', '2': '⠼⠃', '3': '⠼⠉', '4': '⠼⠙', '5': '⠼⠑', '6': '⠼⠋', '7': '⠼⠛', '8': '⠼⠓', '9': '⠼⠊', '0': '⠼⠚' },
-        _names: { 'َ': 'فتحة', 'ُ': 'ضمة', 'ِ': 'كسرة', 'ْ': 'سكون', 'ً': 'تنوين فتح', 'ٌ': 'تنوين ضم', 'ٍ': 'تنوين كسر', 'ّ': 'شدة' }
-    };
+render();
 
-    let _isBlind = false, _buffer = [], _lt = 0, _ltg = null;
-
-    const _speak = (t) => { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'ar-SA'; window.speechSynthesis.speak(u); };
-    const _up = () => { document.getElementById('braille-preview').innerText = _buffer.join(''); const o = document.getElementById('output'); o.scrollTop = o.scrollHeight; };
-
-    return {
-        _uc: function(el, action, desc) {
-            _speak(desc || el.innerText);
-            if (desc === 'نطق النص') checkAd('spk');
-            if (desc === 'مسح الكل') checkAd('clr');
-            if (!_isBlind) { action(); } else { /* منطق الكفيف */ }
-        },
-        _i: function(c) { document.getElementById('output').value += c; _up(); },
-        _s: function() { checkAd('spc'); _speak("مسافة"); document.getElementById('output').value += " "; _buffer.push(" "); _up(); },
-        _b: function() { document.getElementById('output').value = document.getElementById('output').value.slice(0,-1); _buffer.pop(); _up(); },
-        _cl: function() { checkAd('clr'); _speak("تم مسح الكل"); document.getElementById('output').value = ""; _buffer = []; _up(); },
-        _t: function() { 
-            console.log("Rewarded_Android"); // استدعاء مكافأة عند التبديل
-            checkAd('lng'); 
-            _isBlind = !_isBlind; 
-            document.getElementById('keyboard-sighted').style.display = _isBlind ? 'none' : 'grid';
-            document.getElementById('keyboard-blind').style.display = _isBlind ? 'grid' : 'none';
-            _speak(_isBlind ? "وضع الكفيف" : "وضع المبصر");
-        },
-        _sa: function() { checkAd('spk'); _speak(document.getElementById('output').value); },
-        _ex: function() { checkAd('wrd'); _speak("تصدير وورد"); },
-        _r: function() { checkAd('trn'); },
-        _p: function(id, n) { _speak(n); document.getElementById('overlay').style.display = 'block'; document.getElementById(id).classList.add('active'); },
-        _x: function() { document.querySelectorAll('.popup-menu').forEach(p => p.classList.remove('active')); document.getElementById('overlay').style.display = 'none'; },
-        _cy: async function() { _speak("تم النسخ"); },
-        _r: function() { /* تهيئة الكيبورد */ }
-    };
-})();
 </script>
+
 </body>
 </html>
